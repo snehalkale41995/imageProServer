@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { poolPromise } = require("../database/db");
+const winston = require("winston");
+const Joi = require("joi");
 
 router.get("/categories", async (req, res) => {
   const pool = await poolPromise;
@@ -42,5 +44,107 @@ router.get("/shoppingCart/:userId", async (req, res) => {
               WHERE OrderHeader.UserId = ${req.params.userId} `);
      res.send(result.recordset);
   });
+
+
+
+  router.post("/shoppingCart", async (req, res) => {
+    const { error } = validateCart(req.body);
+  
+    if (error) {
+      winston.error("Error occurred ", error.message);
+      res.status(400).send(error.details[0].message);
+      return;
+    }
+    let {ApplicationUserId, MenuItemId, Count} = req.body ;
+     var query =
+      "Insert into dbo.ShoppingCart(ApplicationUserId, MenuItemId, Count)values" +
+      "(@ApplicationUserId, @MenuItemId, @Count)";
+         const pool = await poolPromise;
+     const result = await pool
+      .request()
+      .input("ApplicationUserId", ApplicationUserId)
+      .input("MenuItemId", MenuItemId)
+      .input("Count", Count)
+      .query(query);
+     
+    res.status(201).send(result.recordset);
+  });
+
+  router.post("/orderDetails", async (req, res) => {
+    const { error } = validateOrderDetails(req.body);
+  
+    if (error) {
+      winston.error("Error occurred ", error.message);
+      res.status(400).send(error.details[0].message);
+      return;
+    }
+  
+    let {OrderId, MenuItemId, Count, Name, Description, Price} = req.body ;
+     var query =
+      "Insert into dbo.OrderDetails(OrderId, MenuItemId, Count, Name, Description, Price)values" +
+      "(@OrderId, @MenuItemId, @Count, @Name, @Description, @Price)";
+         const pool = await poolPromise;
+     const result = await pool
+      .request()
+      .input("OrderId", OrderId)
+      .input("MenuItemId", MenuItemId)
+      .input("Count", Count)
+      .input("Name", Name)
+      .input("Description", Description)
+      .input("Price", Price)
+      .query(query);
+     
+    res.status(201).send(result.recordset);
+  });
+
+
+  router.post("/orderHeaders", async (req, res) => {
+    const { error } = validateOrderDetails(req.body);
+  
+    if (error) {
+      winston.error("Error occurred ", error.message);
+      res.status(400).send(error.details[0].message);
+      return;
+    }
+  
+    let {OrderId, MenuItemId, Count, Name, Description, Price} = req.body ;
+     var query =
+      "Insert into dbo.OrderDetails(OrderId, MenuItemId, Count, Name, Description, Price)values" +
+      "(@OrderId, @MenuItemId, @Count, @Name, @Description, @Price)";
+         const pool = await poolPromise;
+     const result = await pool
+      .request()
+      .input("OrderId", OrderId)
+      .input("MenuItemId", MenuItemId)
+      .input("Count", Count)
+      .input("Name", Name)
+      .input("Description", Description)
+      .input("Price", Price)
+      .query(query);
+     
+    res.status(201).send(result.recordset);
+  });
+
+
+  function validateCart(cart) {
+    const schema = {
+      ApplicationUserId: Joi.string().required(),
+      MenuItemId: Joi.number().required(),
+      Count: Joi.number().required()
+    };
+    return Joi.validate(cart, schema);
+  }
+
+  function validateOrderDetails(cart) {
+    const schema = {
+        OrderId: Joi.number().required(),
+        MenuItemId: Joi.number().required(),
+        Count: Joi.number().required(),
+        Name: Joi.string().required(),
+        Description: Joi.string().allow("").optional(),
+        Price: Joi.number().required()
+    };
+    return Joi.validate(cart, schema);
+  }
 
    module.exports = router;
