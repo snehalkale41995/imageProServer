@@ -93,7 +93,7 @@ router.post("/orderDetails", async (req, res) => {
   res.status(201).send(result.recordset);
 });
 
-router.post("/orderHeaders", async (req, res) => {
+router.post("/orderHeader", async (req, res) => {
   const { error } = validateOrderHeaders(req.body);
 
   if (error) {
@@ -115,11 +115,11 @@ router.post("/orderHeaders", async (req, res) => {
     Comments,
     PickUpName,
     PhoneNumber,
-    TransactionId,
+    TransactionId
   } = req.body;
-  var query = `Insert into dbo.OrderDetails(UserId, OrderDate, OrderTotalOriginal, OrderTotal, PickUpTime, CouponCode, 
-        CouponCodeDiscount, Status, PaymentStatus, Comments, PickUpName, PhoneNumber, TransactionId)values" +
-      "(@UserId, @OrderDate, @OrderTotalOriginal, @OrderTotal, @PickUpTime, @CouponCode, @CouponCodeDiscount, @Status, @PaymentStatus, @Comments, @PickUpName, @PhoneNumber, @TransactionId)`;
+  var query = `Insert into dbo.OrderHeader(UserId, OrderDate, OrderTotalOriginal, OrderTotal, PickUpTime, CouponCode, 
+        CouponCodeDiscount, Status, PaymentStatus, Comments, PickUpName, PhoneNumber, TransactionId)values
+        (@UserId, @OrderDate, @OrderTotalOriginal, @OrderTotal, @PickUpTime, @CouponCode, @CouponCodeDiscount, @Status, @PaymentStatus, @Comments, @PickUpName, @PhoneNumber, @TransactionId)`;
   const pool = await poolPromise;
   const result = await pool
     .request()
