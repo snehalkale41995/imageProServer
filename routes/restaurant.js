@@ -66,6 +66,23 @@ router.post("/shoppingCart", async (req, res) => {
   res.status(201).send(result.recordset);
 });
 
+
+router.put("/shoppingCart/:cartId", async (req, res) => {
+    var query = 'UPDATE dbo.ShoppingCart SET Count ='+ req.body.Count + 'WHERE Id = '+ req.params.cartId;
+    const pool = await poolPromise;
+    const result = await pool.request()
+        .query(query);
+    res.send(result.recordset);
+})
+
+router.delete("/shoppingCart/:cartId", async (req, res) => {
+    var query = 'DELETE From dbo.ShoppingCart WHERE Id = '+ req.params.cartId;
+    const pool = await poolPromise;
+    const result = await pool.request()
+        .query(query);
+    res.send(result.recordset);
+})
+
 router.post("/orderDetails", async (req, res) => {
   const { error } = validateOrderDetails(req.body);
 
