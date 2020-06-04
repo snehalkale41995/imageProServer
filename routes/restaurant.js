@@ -53,7 +53,7 @@ router.post("/shoppingCart", async (req, res) => {
     FROM [dbo].[ShoppingCart] where ApplicationUserId = '${menuList[i].ApplicationUserId}' and 
     MenuItemId = ${menuList[i].MenuItemId}`);
     console.log("ApplicationUserId outerrr", menuList[i].ApplicationUserId)
-    if(result.recordset[0].Count == 0){
+    if(result.recordset[0].Count == 0 && (menuList[i].Count !== 0)){
       let { ApplicationUserId, MenuItemId, Count } = menuList[i];
       console.log("ApplicationUserId ifff", ApplicationUserId)
       var query =
@@ -69,14 +69,26 @@ router.post("/shoppingCart", async (req, res) => {
     }
     else{
       let { ApplicationUserId, MenuItemId, Count } = menuList[i];
+      console.log("menuList[i]", menuList[i])
+      console.log("Count]", Count)
+      if(Count==0){
+        console.log("ApplicationUserId neww", ApplicationUserId)
+        endResult = await pool.request().query(`delete from [dbo].[ShoppingCart]
+         where ApplicationUserId = '${ApplicationUserId}' and 
+        MenuItemId = ${MenuItemId}`); 
+        }
+      
+      else{
       console.log("ApplicationUserId elssseee", ApplicationUserId)
       endResult = await pool.request().query(`Update [dbo].[ShoppingCart]
       set Count = ${Count}
        where ApplicationUserId = '${ApplicationUserId}' and 
       MenuItemId = ${MenuItemId}`); 
+      }
+      
     }
   }
-  res.status(200).send(endResult.recordset);
+  res.status(200).send([{"success" : true}]);
 });
 
 router.put("/shoppingCart/:cartId", async (req, res) => {
