@@ -14,17 +14,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.19.2",
     "config": "^1.30.0",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
     "express": "^4.16.3",
     "express-async-errors": "^3.0.0",
     "helmet": "^3.12.1",
+    "https": "^1.0.0",
     "joi": "^13.4.0",
     "lodash": "^4.17.10",
     "moment": "^2.22.2",
     "morgan": "^1.9.0",
     "mssql": "^4.1.0",
+    "querystring": "^0.2.0",
     "winston": "2.4.3"
   }
 }
