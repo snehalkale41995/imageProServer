@@ -2,6 +2,7 @@ require('express-async-errors');
 const express = require('express');
 const app = express();
 const winston = require('winston');
+const path = require("path");
 
 winston.add(winston.transports.File, { filename: 'logfile.log' });
 
@@ -16,4 +17,7 @@ require('./startup/prod')(app);
 app.listen(port, function () {
     winston.info(`Server started at port ${port}.`);
 });
+
+
+
 

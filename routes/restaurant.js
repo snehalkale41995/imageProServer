@@ -21,7 +21,7 @@ router.get("/coupons", async (req, res) => {
 router.get("/menuItems", async (req, res) => {
   const pool = await poolPromise;
   const result = await pool.request()
-    .query(`SELECT Menu.Id , Menu.Name, Menu.Image , Menu.Price, Cat.Name as categoryName
+    .query(`SELECT Menu.Id , Menu.Name, Menu.Image , Menu.Picture, Menu.Price, Cat.Name as categoryName
             FROM [dbo].[MenuItem] Menu INNER JOIN [dbo].[Category] Cat ON Menu.CategoryId = Cat.Id;`);
   res.send(result.recordset);
 });
