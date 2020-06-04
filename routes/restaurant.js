@@ -29,7 +29,7 @@ router.get("/menuItems", async (req, res) => {
 router.get("/shoppingCart/:userId", async (req, res) => {
   const pool = await poolPromise;
   const result = await pool.request()
-    .query(`SELECT shop.Id, shop.ApplicationUserId, Menu.Name, Menu.Image , Menu.Price, shop.Count
+    .query(`SELECT shop.Id, shop.ApplicationUserId, shop.MenuItemId, Menu.Name, Menu.Image , Menu.Price, shop.Count
                 FROM [dbo].[MenuItem] Menu INNER JOIN [dbo].[ShoppingCart] Shop ON Shop.MenuItemId = Menu.Id where shop.ApplicationUserId = ${req.params.userId}`);
   res.send(result.recordset);
 });
@@ -44,44 +44,58 @@ router.get("/orders/:userId", async (req, res) => {
 });
 
 router.post("/shoppingCart", async (req, res) => {
-  const { error } = validateCart(req.body);
-
-  if (error) {
-    winston.error("Error occurred ", error.message);
-    res.status(400).send(error.details[0].message);
-    return;
-  }
-  let { ApplicationUserId, MenuItemId, Count } = req.body;
-  var query =
-    "Insert into dbo.ShoppingCart(ApplicationUserId, MenuItemId, Count)values" +
-    "(@ApplicationUserId, @MenuItemId, @Count)";
+  
+  let menuList = req.body;
   const pool = await poolPromise;
-  const result = await pool
-    .request()
-    .input("ApplicationUserId", ApplicationUserId)
-    .input("MenuItemId", MenuItemId)
-    .input("Count", Count)
-    .query(query);
-
-  res.status(201).send(result.recordset);
+  let endResult;
+  for (let i = 0; i < menuList.length; i++) {
+    const result = await pool.request().query(`SELECT count(Id) as Count
+    FROM [dbo].[ShoppingCart] where ApplicationUserId = '${menuList[i].ApplicationUserId}' and 
+    MenuItemId = ${menuList[i].MenuItemId}`);
+    console.log("ApplicationUserId outerrr", menuList[i].ApplicationUserId)
+    if(result.recordset[0].Count == 0){
+      let { ApplicationUserId, MenuItemId, Count } = menuList[i];
+      console.log("ApplicationUserId ifff", ApplicationUserId)
+      var query =
+        "Insert into dbo.ShoppingCart(ApplicationUserId, MenuItemId, Count)values" +
+        "(@ApplicationUserId, @MenuItemId, @Count)";
+       
+      const result = await pool
+        .request()
+        .input("ApplicationUserId", ApplicationUserId)
+        .input("MenuItemId", MenuItemId)
+        .input("Count", Count)
+        .query(query);
+    }
+    else{
+      let { ApplicationUserId, MenuItemId, Count } = menuList[i];
+      console.log("ApplicationUserId elssseee", ApplicationUserId)
+      endResult = await pool.request().query(`Update [dbo].[ShoppingCart]
+      set Count = ${Count}
+       where ApplicationUserId = '${ApplicationUserId}' and 
+      MenuItemId = ${MenuItemId}`); 
+    }
+  }
+  res.status(200).send(endResult.recordset);
 });
 
-
 router.put("/shoppingCart/:cartId", async (req, res) => {
-    var query = 'UPDATE dbo.ShoppingCart SET Count ='+ req.body.Count + 'WHERE Id = '+ req.params.cartId;
-    const pool = await poolPromise;
-    const result = await pool.request()
-        .query(query);
-    res.send(result.recordset);
-})
+  var query =
+    "UPDATE dbo.ShoppingCart SET Count =" +
+    req.body.Count +
+    "WHERE Id = " +
+    req.params.cartId;
+  const pool = await poolPromise;
+  const result = await pool.request().query(query);
+  res.send(result.recordset);
+});
 
 router.delete("/shoppingCart/:cartId", async (req, res) => {
-    var query = 'DELETE From dbo.ShoppingCart WHERE Id = '+ req.params.cartId;
-    const pool = await poolPromise;
-    const result = await pool.request()
-        .query(query);
-    res.send(result.recordset);
-})
+  var query = "DELETE From dbo.ShoppingCart WHERE Id = " + req.params.cartId;
+  const pool = await poolPromise;
+  const result = await pool.request().query(query);
+  res.send(result.recordset);
+});
 
 router.post("/orderDetails", async (req, res) => {
   const { error } = validateOrderDetails(req.body);
@@ -132,7 +146,7 @@ router.post("/orderHeader", async (req, res) => {
     Comments,
     PickUpName,
     PhoneNumber,
-    TransactionId
+    TransactionId,
   } = req.body;
   var query = `Insert into dbo.OrderHeader(UserId, OrderDate, OrderTotalOriginal, OrderTotal, PickUpTime, CouponCode, 
         CouponCodeDiscount, Status, PaymentStatus, Comments, PickUpName, PhoneNumber, TransactionId)values
