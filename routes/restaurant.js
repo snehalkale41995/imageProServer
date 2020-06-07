@@ -52,10 +52,8 @@ router.post("/shoppingCart", async (req, res) => {
     const result = await pool.request().query(`SELECT count(Id) as Count
     FROM [dbo].[ShoppingCart] where ApplicationUserId = '${menuList[i].ApplicationUserId}' and 
     MenuItemId = ${menuList[i].MenuItemId}`);
-    console.log("ApplicationUserId outerrr", menuList[i].ApplicationUserId)
     if(result.recordset[0].Count == 0 && (menuList[i].Count !== 0)){
       let { ApplicationUserId, MenuItemId, Count } = menuList[i];
-      console.log("ApplicationUserId ifff", ApplicationUserId)
       var query =
         "Insert into dbo.ShoppingCart(ApplicationUserId, MenuItemId, Count)values" +
         "(@ApplicationUserId, @MenuItemId, @Count)";
@@ -69,17 +67,14 @@ router.post("/shoppingCart", async (req, res) => {
     }
     else{
       let { ApplicationUserId, MenuItemId, Count } = menuList[i];
-      console.log("menuList[i]", menuList[i])
-      console.log("Count]", Count)
+    
       if(Count==0){
-        console.log("ApplicationUserId neww", ApplicationUserId)
         endResult = await pool.request().query(`delete from [dbo].[ShoppingCart]
          where ApplicationUserId = '${ApplicationUserId}' and 
         MenuItemId = ${MenuItemId}`); 
         }
       
       else{
-      console.log("ApplicationUserId elssseee", ApplicationUserId)
       endResult = await pool.request().query(`Update [dbo].[ShoppingCart]
       set Count = ${Count}
        where ApplicationUserId = '${ApplicationUserId}' and 
@@ -102,38 +97,41 @@ router.put("/shoppingCart/:cartId", async (req, res) => {
   res.send(result.recordset);
 });
 
-router.delete("/shoppingCart/:cartId", async (req, res) => {
-  var query = "DELETE From dbo.ShoppingCart WHERE Id = " + req.params.cartId;
+router.put("/shopping/:userId", async (req, res) => {
+  //let userId = '41fbdfee-1d5f-4290-bbe4-7271ed59a921'
+  var query =
+  `delete FROM [dbo].[ShoppingCart] 
+  where ApplicationUserId = '${req.params.userId}'`
   const pool = await poolPromise;
   const result = await pool.request().query(query);
   res.send(result.recordset);
 });
 
-router.post("/orderDetails", async (req, res) => {
-  const { error } = validateOrderDetails(req.body);
 
-  if (error) {
-    winston.error("Error occurred ", error.message);
-    res.status(400).send(error.details[0].message);
-    return;
+
+router.post("/orderDetails", async (req, res) => {
+  // const { error } = validateOrderDetails(req.body);
+  let orderList = req.body;
+  
+  for (let i = 0; i < orderList.length; i++) {
+    let { OrderId, MenuItemId, Count, Name, Description, Price } = orderList[i];
+    var query =
+      "Insert into dbo.OrderDetails(OrderId, MenuItemId, Count, Name, Description, Price)values" +
+      "(@OrderId, @MenuItemId, @Count, @Name, @Description, @Price)";
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("OrderId", OrderId)
+      .input("MenuItemId", MenuItemId)
+      .input("Count", Count)
+      .input("Name", Name)
+      .input("Description", Description)
+      .input("Price", Price)
+      .query(query);
+
   }
 
-  let { OrderId, MenuItemId, Count, Name, Description, Price } = req.body;
-  var query =
-    "Insert into dbo.OrderDetails(OrderId, MenuItemId, Count, Name, Description, Price)values" +
-    "(@OrderId, @MenuItemId, @Count, @Name, @Description, @Price)";
-  const pool = await poolPromise;
-  const result = await pool
-    .request()
-    .input("OrderId", OrderId)
-    .input("MenuItemId", MenuItemId)
-    .input("Count", Count)
-    .input("Name", Name)
-    .input("Description", Description)
-    .input("Price", Price)
-    .query(query);
-
-  res.status(201).send(result.recordset);
+  res.status(201).send([{"status" : "ok"}]);
 });
 
 router.post("/orderHeader", async (req, res) => {
@@ -162,7 +160,8 @@ router.post("/orderHeader", async (req, res) => {
   } = req.body;
   var query = `Insert into dbo.OrderHeader(UserId, OrderDate, OrderTotalOriginal, OrderTotal, PickUpTime, CouponCode, 
         CouponCodeDiscount, Status, PaymentStatus, Comments, PickUpName, PhoneNumber, TransactionId)values
-        (@UserId, @OrderDate, @OrderTotalOriginal, @OrderTotal, @PickUpTime, @CouponCode, @CouponCodeDiscount, @Status, @PaymentStatus, @Comments, @PickUpName, @PhoneNumber, @TransactionId)`;
+        (@UserId, @OrderDate, @OrderTotalOriginal, @OrderTotal, @PickUpTime, @CouponCode, @CouponCodeDiscount, @Status, @PaymentStatus, @Comments, @PickUpName, @PhoneNumber, @TransactionId)
+         SELECT SCOPE_IDENTITY() AS Id;`;
   const pool = await poolPromise;
   const result = await pool
     .request()
@@ -180,7 +179,6 @@ router.post("/orderHeader", async (req, res) => {
     .input("PhoneNumber", PhoneNumber)
     .input("TransactionId", TransactionId)
     .query(query);
-
   res.status(201).send(result.recordset);
 });
 
@@ -217,7 +215,7 @@ function validateOrderHeaders(order) {
     Status: Joi.string().required(),
     PaymentStatus: Joi.string().required(),
     Comments: Joi.string().allow("").optional(),
-    PickUpName: Joi.string().required(),
+    PickUpName: Joi.string().allow("").optional(),
     PhoneNumber: Joi.number().required(),
     TransactionId: Joi.string().allow("").optional(),
   };

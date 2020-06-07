@@ -12,8 +12,8 @@ const winston = require('winston');
              encrypt: true
            , trustedConnection: true
         },
-      apiUrl: ''
-   }; 
+        multipleStatements: true   
+      }; 
 
 const poolPromise = new sql.ConnectionPool(config)
     .connect()
