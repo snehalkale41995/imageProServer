@@ -34,14 +34,21 @@ router.post("/login", async (request, response) => {
         });
       
         res.on("end", function () {
+          
           data = Buffer.concat(chunks);
-          let token = jwt.sign({username: Email},
-            config.secret,
-            { expiresIn: '24h' // expires in 24 hours
-            }
-          );
-        
-          response.status(201).send({"data" : JSON.parse(data), "token": token});
+         
+          if(data.length > 80){
+            let token = jwt.sign({username: Email},
+              config.secret,
+              { expiresIn: '24h' // expires in 24 hours
+              }
+            );
+            response.status(201).send({"data" : [JSON.parse(data)], "token": token});
+          }
+          else{
+            response.status(201).send({"data" : [], "token": 'inValid'});
+          }
+         
         });
       });
       

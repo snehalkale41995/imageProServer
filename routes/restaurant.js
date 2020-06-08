@@ -98,11 +98,10 @@ router.put("/shoppingCart/:cartId", middleware.checkToken, async (req, res) => {
   res.send(result.recordset);
 });
 
-router.put("/shopping/:userId", middleware.checkToken, async (req, res) => {
+router.put("/shopping/:userId", async (req, res) => {
   //let userId = '41fbdfee-1d5f-4290-bbe4-7271ed59a921'
-  var query =
-  `delete FROM [dbo].[ShoppingCart] 
-  where ApplicationUserId = '${req.params.userId}'`
+  console.log("req.params.userId", req.params.userId)
+  var query = `delete FROM [dbo].[ShoppingCart] where ApplicationUserId = ${req.params.userId}`
   const pool = await poolPromise;
   const result = await pool.request().query(query);
   res.send(result.recordset);
