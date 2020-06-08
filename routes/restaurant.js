@@ -3,6 +3,7 @@ const router = express.Router();
 const { poolPromise } = require("../database/db");
 const winston = require("winston");
 const Joi = require("joi");
+let middleware = require('../middleware/auth');
 
 router.get("/categories", async (req, res) => {
   const pool = await poolPromise;
@@ -26,7 +27,7 @@ router.get("/menuItems", async (req, res) => {
   res.send(result.recordset);
 });
 
-router.get("/shoppingCart/:userId", async (req, res) => {
+router.get("/shoppingCart/:userId", middleware.checkToken, async (req, res) => {
   const pool = await poolPromise;
   const result = await pool.request()
     .query(`SELECT shop.Id, shop.ApplicationUserId, shop.MenuItemId, Menu.Name, Menu.Image , Menu.Price, shop.Count
@@ -34,7 +35,7 @@ router.get("/shoppingCart/:userId", async (req, res) => {
   res.send(result.recordset);
 });
 
-router.get("/orders/:userId", async (req, res) => {
+router.get("/orders/:userId",middleware.checkToken, async (req, res) => {
   const pool = await poolPromise;
   const result = await pool.request()
     .query(`SELECT OrderHeader.* , OrderDetails.MenuItemId,   OrderDetails.Count,  OrderDetails.Name, OrderDetails.Price
@@ -43,7 +44,7 @@ router.get("/orders/:userId", async (req, res) => {
   res.send(result.recordset);
 });
 
-router.post("/shoppingCart", async (req, res) => {
+router.post("/shoppingCart", middleware.checkToken,async (req, res) => {
   
   let menuList = req.body;
   const pool = await poolPromise;
@@ -86,7 +87,7 @@ router.post("/shoppingCart", async (req, res) => {
   res.status(200).send([{"success" : true}]);
 });
 
-router.put("/shoppingCart/:cartId", async (req, res) => {
+router.put("/shoppingCart/:cartId", middleware.checkToken, async (req, res) => {
   var query =
     "UPDATE dbo.ShoppingCart SET Count =" +
     req.body.Count +
@@ -97,7 +98,7 @@ router.put("/shoppingCart/:cartId", async (req, res) => {
   res.send(result.recordset);
 });
 
-router.put("/shopping/:userId", async (req, res) => {
+router.put("/shopping/:userId", middleware.checkToken, async (req, res) => {
   //let userId = '41fbdfee-1d5f-4290-bbe4-7271ed59a921'
   var query =
   `delete FROM [dbo].[ShoppingCart] 
@@ -109,7 +110,7 @@ router.put("/shopping/:userId", async (req, res) => {
 
 
 
-router.post("/orderDetails", async (req, res) => {
+router.post("/orderDetails", middleware.checkToken, async (req, res) => {
   // const { error } = validateOrderDetails(req.body);
   let orderList = req.body;
   
@@ -134,7 +135,7 @@ router.post("/orderDetails", async (req, res) => {
   res.status(201).send([{"status" : "ok"}]);
 });
 
-router.post("/orderHeader", async (req, res) => {
+router.post("/orderHeader", middleware.checkToken, async (req, res) => {
   const { error } = validateOrderHeaders(req.body);
 
   if (error) {

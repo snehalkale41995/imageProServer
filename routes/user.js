@@ -5,7 +5,10 @@ var axios = require("axios");
 const Joi = require("joi");
 var http = require("https");
 var qs = require("querystring");
-const {appConfig} = require("../database/appConfig")
+const {appConfig} = require("../database/appConfig");
+let jwt = require('jsonwebtoken');
+let config = require('../config/config');
+let middleware = require('../middleware/auth');
 
 
 router.post("/login", async (request, response) => {
@@ -32,7 +35,13 @@ router.post("/login", async (request, response) => {
       
         res.on("end", function () {
           data = Buffer.concat(chunks);
-          response.status(201).send(JSON.parse(data));
+          let token = jwt.sign({username: Email},
+            config.secret,
+            { expiresIn: '24h' // expires in 24 hours
+            }
+          );
+        
+          response.status(201).send({"data" : JSON.parse(data), "token": token});
         });
       });
       
@@ -41,7 +50,6 @@ router.post("/login", async (request, response) => {
   });
 
   router.post("/register", async (request, response) => {
-      console.log("req.body", request.body)
       let {Name,  Email, PhoneNumber, StreetAddress, State,  PostalCode, Password, City} = request.body;
       var data;
       var options = {
