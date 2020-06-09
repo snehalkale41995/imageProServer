@@ -44,9 +44,9 @@ router.get("/orders/:userId",middleware.checkToken, async (req, res) => {
   res.send(result.recordset);
 });
 
-router.post("/shoppingCart", middleware.checkToken,async (req, res) => {
-  
-  let menuList = req.body;
+router.post("/shoppingCart", middleware.checkToken, async (request, res) => {
+  let menuList = request.body;
+  console.log("menuItems", menuList)
   const pool = await poolPromise;
   let endResult;
   for (let i = 0; i < menuList.length; i++) {
