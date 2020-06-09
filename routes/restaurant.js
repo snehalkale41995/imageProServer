@@ -3,6 +3,7 @@ const router = express.Router();
 const { poolPromise } = require("../database/db");
 const winston = require("winston");
 const Joi = require("joi");
+const { appConfig } = require("../database/appConfig");
 let middleware = require('../middleware/auth');
 
 router.get("/categories", async (req, res) => {
@@ -181,6 +182,23 @@ router.post("/orderHeader", middleware.checkToken, async (req, res) => {
     .query(query);
   res.status(201).send(result.recordset);
 });
+
+router.post("/stripePay", async (request, response) => {
+  const stripe = require("stripe")(appConfig.stripeSecretKey);
+  let data = request.body;
+  const body = {
+    source: data.tokenId,
+    amount: data.amount,
+    currency : data.currency
+  };
+ 
+  stripe.charges.create(body)
+    .then((stripeRes) => {
+      console.log("stripeRes")
+    })
+    .catch((e) => {});
+  })
+
 
 function validateCart(cart) {
   const schema = {
