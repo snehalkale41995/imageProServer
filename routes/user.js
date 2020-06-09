@@ -141,12 +141,31 @@ router.post("/sendEmail", async (request, response) => {
     },
   });
 
-  transporter.sendMail(message, function (err, info) {
-    if (err) {
-      console.log("sendMail---err", err);
+  transporter.sendMail(message, function (error, info) {
+    if (error) {
+      console.log("erroe", error);
     }
   });
   response.status(201).send({"data" : "success"});
 });
+
+router.post("/stripePay", async (request, response) => {
+  const stripe = require("stripe")(appConfig.stripeSecretKey);
+  let data = request.body;
+  const body = {
+    source: data.tokenId,
+    amount: data.amount,
+    currency : data.currency
+  };
+ 
+  stripe.charges.create(body)
+    .then((stripeRes) => {
+      console.log("stripeRes")
+    })
+    .catch((e) => {});
+  })
+
+
+
 
 module.exports = router;
