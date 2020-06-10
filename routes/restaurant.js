@@ -194,7 +194,7 @@ router.post("/stripePay", async (request, response) => {
  
   stripe.charges.create(body)
     .then((stripeRes) => {
-      console.log("stripeRes")
+      console.log("stripeRes", stripeRes)
     })
     .catch((e) => {});
   })

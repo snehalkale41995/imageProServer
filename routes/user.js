@@ -158,12 +158,22 @@ router.post("/stripePay", async (request, response) => {
     currency : data.currency
   };
  
-  stripe.charges.create(body)
-    .then((stripeRes) => {
-      console.log("stripeRes")
-    })
-    .catch((e) => {});
+  // stripe.charges.create(body)
+  //   .then((stripeRes) => {
+  //     console.log("stripeRes", stripeRes)
+  //   })
+  //   .catch((e) => {});
+
+
+    stripe.charges.create(body),
+      function(err, charge) {
+        console.log("response", response)
+        // asynchronously called
+      }
+    
   })
+
+
 
 
 
