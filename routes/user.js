@@ -146,35 +146,8 @@ router.post("/sendEmail", async (request, response) => {
       console.log("erroe", error);
     }
   });
-  response.status(201).send({"data" : "success"});
+  response.status(201).send({ data: "success" });
 });
-
-router.post("/stripePay", async (request, response) => {
-  const stripe = require("stripe")(appConfig.stripeSecretKey);
-  let data = request.body;
-  const body = {
-    source: data.tokenId,
-    amount: data.amount,
-    currency : data.currency
-  };
- 
-  // stripe.charges.create(body)
-  //   .then((stripeRes) => {
-  //     console.log("stripeRes", stripeRes)
-  //   })
-  //   .catch((e) => {});
-
-
-    stripe.charges.create(body),
-      function(err, charge) {
-        console.log("response", response)
-        // asynchronously called
-      }
-    
-  })
-
-
-
 
 
 

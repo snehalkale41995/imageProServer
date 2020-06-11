@@ -129,10 +129,8 @@ router.post("/orderDetails", middleware.checkToken, async (req, res) => {
       .input("Description", Description)
       .input("Price", Price)
       .query(query);
-
   }
-
-  res.status(201).send([{"status" : "ok"}]);
+  res.status(201).send({"status" : "ok"});
 });
 
 router.post("/orderHeader", middleware.checkToken, async (req, res) => {
@@ -180,7 +178,8 @@ router.post("/orderHeader", middleware.checkToken, async (req, res) => {
     .input("PhoneNumber", PhoneNumber)
     .input("TransactionId", TransactionId)
     .query(query);
-  res.status(201).send(result.recordset);
+ 
+  res.status(201).send({"status" : "ok", data: result.recordset});
 });
 
 router.post("/stripePay", async (request, response) => {
@@ -194,7 +193,16 @@ router.post("/stripePay", async (request, response) => {
  
   stripe.charges.create(body)
     .then((stripeRes) => {
-      console.log("stripeRes", stripeRes)
+   // console.log("stripeRes", stripeRes)
+      if (stripeRes) {
+        console.log("responseeeeeeeeeeeeess", stripeRes.balance_transaction);
+        response
+          .status(201)
+          .send({ data: stripeRes.balance_transaction, status: "success" });
+      } else
+        response
+          .status(201)
+          .send({ data: "", status: "failed" });
     })
     .catch((e) => {});
   })
