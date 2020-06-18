@@ -783,16 +783,16 @@ a.es-button {
                                         <table class="es-header-body" width="600" cellspacing="0" cellpadding="0" bgcolor="#ffffff" align="center">
                                             <tbody>
                                                 <tr>
-                                                    <td class="esd-structure es-p20t es-p10b es-p20r es-p20l" align="left">
+                                                    <td class="esd-structure es-p20t es-p10b es-p20r es-p20l" align="center">
                                                         <!--[if mso]><table width="560" cellpadding="0" cellspacing="0"><tr><td width="270" valign="top"><![endif]-->
-                                                        <table class="es-left" cellspacing="0" cellpadding="0" align="left">
+                                                        <table  cellspacing="0" cellpadding="0" align="center">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td class="es-m-p20b esd-container-frame" width="270" align="left">
+                                                                    <td class="es-m-p20b esd-container-frame" width="270" align="center">
                                                                         <table width="100%" cellspacing="0" cellpadding="0">
                                                                             <tbody>
                                                                                 <tr>
-                                                                                    <td class="esd-block-image es-p5b" align="left" style="font-size:0"><a target="_blank" href="https://viewstripo.email/"><img src="https://agile-cliffs-99845.herokuapp.com/categoryPic_4.jpg" alt style="display: block;" class="adapt-img" width="125"></a></td>
+                                                                                    <td class="esd-block-image es-p5b" align="left" style="font-size:0"><a target="_blank" href="https://viewstripo.email/"><img src="https://agile-cliffs-99845.herokuapp.com/appLogo.jpg" alt style="display: block;" class="adapt-img" width="125"></a></td>
                                                                                 </tr>
                                                                             </tbody>
                                                                         </table>
@@ -800,31 +800,6 @@ a.es-button {
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                        <!--[if mso]></td><td width="20"></td><td width="270" valign="top"><![endif]-->
-                                                        <table class="es-right" cellspacing="0" cellpadding="0" align="right">
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td class="esd-container-frame" width="270" align="left">
-                                                                        <table width="100%" cellspacing="0" cellpadding="0">
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    <td class="esd-block-menu" esd-tmp-menu-color="#e06666">
-                                                                                        <table class="es-menu" width="100%" cellspacing="0" cellpadding="0">
-                                                                                            <tbody>
-                                                                                                <tr class="links">
-                                                                                                    <td class="es-p10t es-p10b es-p5r es-p5l" style="padding-bottom: 10px; padding-top: 10px; " width="100%" valign="top" bgcolor="transparent" align="center"><a target="_blank" style="color: #e06666;" href="https://viewstripo.email/">Order Id : ${orderId}</a></td>
-                                                                                                </tr>
-                                                                                            </tbody>
-                                                                                        </table>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                        <!--[if mso]></td></tr></table><![endif]-->
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -858,7 +833,7 @@ a.es-button {
                                                                                     </td>
                                                                                 </tr>
                                                                                 <tr>
-                                                                                    <td align="center" class="esd-block-button es-p20t es-p20b es-p10r es-p10l"><span class="es-button-border es-button-border-1591886393870" style="background: #cd524e;"><a href="https://viewstripo.email/" class="es-button es-button-1591886393831" target="_blank" style="font-family: arial, &quot;helvetica neue&quot;, helvetica, sans-serif; border-width: 10px 20px; background: #cd524e; border-color: #cd524e;"> status : Pending</a></span></td>
+                                                                                    <td align="center" class="esd-block-button es-p20t es-p20b es-p10r es-p10l"><span class="es-button-border es-button-border-1591886393870" style="background: #cd524e;"><a href="https://viewstripo.email/" class="es-button es-button-1591886393831" target="_blank" style="font-family: arial, &quot;helvetica neue&quot;, helvetica, sans-serif; border-width: 10px 20px; background: #e3d8d8; border-color: #e3d8d8;"> status : Pending</a></span></td>
                                                                                 </tr>
                                                                             </tbody>
                                                                         </table>
@@ -913,8 +888,8 @@ a.es-button {
                                                                                                     <td><strong><span style="font-size: 14px; line-height: 150%;">$ ${OrderTotal}</span></strong></td>
                                                                                                 </tr>
                                                                                                 <tr>
-                                                                                                    <td style="font-size: 14px; line-height: 150%;">Delivery Address:</td>
-                                                                                                    <td><strong><span style="font-size: 14px; line-height: 150%;">$ ${address}</span></strong></td>
+                                                                                                    <td style="font-size: 14px; line-height: 150%;">Delivery Addr.:</td>
+                                                                                                    <td><strong><span style="font-size: 14px; line-height: 150%;"> ${address}</span></strong></td>
                                                                                                 </tr>
                                                                                             </tbody>
                                                                                         </table>

@@ -10,6 +10,7 @@ let jwt = require("jsonwebtoken");
 let config = require("../config/config");
 let middleware = require("../middleware/auth");
 const nodeMailer = require("nodemailer");
+var request = require('request');
 
 router.post("/login", async (request, response) => {
   let { Email, Password } = request.body;
@@ -147,6 +148,25 @@ router.post("/sendEmail", async (request, response) => {
     }
   });
   response.status(201).send({ data: "success" });
+});
+
+
+router.post("/sendWhatsAppSms", async (req, res) => {
+ // let { password, email, name } = req.body;
+
+ const accountSid = 'AC604b21525f927d7e454569f4ed2e0645';
+const authToken = 'f27e1e47789c00bf14350816a366e658';
+const client = require('twilio')(accountSid, authToken);
+
+client.messages
+      .create({
+         from: 'whatsapp:+14155238886',
+         body: 'Your appointment is coming up on July 21 at 3PM',
+         to: 'whatsapp:+919689065990'
+       })
+      .then(message => console.log(message.sid))
+      .catch(error => console.log("error",error));
+  res.status(201).send({ data: "success" });
 });
 
 
