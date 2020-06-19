@@ -162,7 +162,7 @@ client.messages
       .create({
          from: 'whatsapp:+14155238886',
          body: 'Your appointment is coming up on July 21 at 3PM',
-         to: 'whatsapp:+919689065990'
+         to: 'whatsapp:+919665150843'
        })
       .then(message => console.log(message.sid))
       .catch(error => console.log("error",error));
