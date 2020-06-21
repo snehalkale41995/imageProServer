@@ -36,12 +36,27 @@ router.get("/shoppingCart/:userId", middleware.checkToken, async (req, res) => {
   res.send(result.recordset);
 });
 
+router.get("/shoppingCartCount/:userId", middleware.checkToken, async (req, res) => {
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .query(`select count(*) as cartCount from [dbo].[ShoppingCart]
+    where ApplicationUserId = ${req.params.userId}`);
+  res.send(result.recordset);
+});
+
 router.get("/orders/:userId",middleware.checkToken, async (req, res) => {
   const pool = await poolPromise;
   const result = await pool.request()
     .query(`SELECT OrderHeader.* , OrderDetails.MenuItemId,   OrderDetails.Count,  OrderDetails.Name, OrderDetails.Price
               FROM [dbo].[OrderHeader] OrderHeader INNER JOIN [dbo].[OrderDetails] [OrderDetails] ON OrderHeader.Id = OrderDetails.OrderId 
               WHERE OrderHeader.UserId = ${req.params.userId} `);
+  res.send(result.recordset);
+});
+
+router.get("/myOrders/:userId",middleware.checkToken, async (req, res) => {
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .query(`SELECT * FROM [dbo].[OrderHeader]  WHERE UserId = ${req.params.userId} `);
   res.send(result.recordset);
 });
 
