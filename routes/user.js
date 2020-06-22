@@ -130,9 +130,16 @@ router.post("/sendEmail", async (request, response) => {
       password +
       "</span>" +
       "</p>" +
+      "</span>" +
+      "<p style='color:#000;'>To receive Order updates Please send a <b> WhatsApp message </b> to  <b>+14155238886 </b> with code <b>join black-dozen</b>.</p>"
+       +
+      "</span>" +
+      "</p>" +
       "</span><br/><br/>" +
       "<p style='color:#000;'>Warm Regards,<br/>Team Chef Bites</p>",
   };
+
+  
 
   var transporter = nodeMailer.createTransport({
     service: "gmail",
@@ -152,17 +159,17 @@ router.post("/sendEmail", async (request, response) => {
 
 
 router.post("/sendWhatsAppSms", async (req, res) => {
- // let { password, email, name } = req.body;
+  let { RestaurantName, deliveryTime , deliveryPerson, deliveryContact, mobileNumber } = req.body;
 
- const accountSid = 'AC604b21525f927d7e454569f4ed2e0645';
-const authToken = 'f27e1e47789c00bf14350816a366e658';
+const accountSid = 'AC604b21525f927d7e454569f4ed2e0645';
+const authToken = '306849dd1ee822a10761658037cff64d';
 const client = require('twilio')(accountSid, authToken);
 
 client.messages
       .create({
          from: 'whatsapp:+14155238886',
-         body: 'Your appointment is coming up on July 21 at 3PM',
-         to: 'whatsapp:+9196567676'
+         body: `Your order from ${RestaurantName} has been confirmed. It will be delivered by ${deliveryTime}. You can contact our delivery person ${deliveryPerson} on ${deliveryContact}`,
+         to: `whatsapp:+91${mobileNumber}`
        })
       .then(message => console.log(message.sid))
       .catch(error => console.log("error",error));
