@@ -23,18 +23,28 @@ const fileFilter = (req, file, cb) => {
     }
 }
 const upload = multer({ storage: storage, fileFilter: fileFilter });
-
-router.post('/upload', upload.single('image'), (req, res, next) => {
-    try {
-        sharp(req.file.path).resize(200, 200).toFile('public/' + 'thumbnails-' + req.file.originalname, (err, resizeImage) => {
+ 
+router.post('/upload', upload.array('images'), (req, res, next) => {
+  console.log("req.files", req.files)
+ let {firstImageHeight, firstImageWidth, ratio} = req.body;
+     try {
+        sharp(req.files[0].path).resize({width: parseInt(firstImageWidth), height : parseInt(firstImageHeight)}).toFile('public/' + 'thumbnails-' + req.files[0].originalname, (err, resizeImage) => {
             if (err) {
                 console.log(err);
             } else {
                 console.log(resizeImage);
             }
         })
+       
         return res.status(201).json({
-            thumbnailPath : `${serverUrl}/thumbnails-${req.file.originalname}`,
+          data : {
+            thumbnailPath : `${serverUrl}/thumbnails-${req.files[0].originalname}`,
+            ratio : {
+              firstImageHeight: firstImageHeight,
+              firstImageWidth: firstImageWidth,
+              ratio: ratio
+            }
+          },
             message: 'File uploded successfully'
         });
     } catch (error) {
