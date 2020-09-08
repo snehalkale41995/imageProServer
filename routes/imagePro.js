@@ -3,7 +3,8 @@ const router = express();
 const path = require('path');
 const multer = require('multer');
 const sharp = require('sharp');
-const serverUrl = 'http://localhost:5000'
+const serverUrl = 'http://localhost:5000';
+const { exec } = require("child_process");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -51,5 +52,30 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
         console.error(error);
     }
 });
+
+router.post('/uploadLogoWatermark', upload.array('images'), (req, res) => {
+   
+});
+
+
+router.post('/generateCommand', (req, res) => {
+  let {commandArray} = req.body;
+
+ for(let i=0; i<commandArray.length; i++){
+    exec(commandArray[i], (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+    });
+}
+});
+
+
 
 module.exports = router;
