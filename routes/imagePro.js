@@ -73,6 +73,9 @@ router.post('/generateCommand', (req, res) => {
         console.log(`stdout: ${stdout}`);
     });
 }
+  return res.status(200).json({
+      message: 'success'
+    });
 });
 
 
