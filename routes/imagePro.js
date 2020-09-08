@@ -60,9 +60,8 @@ router.post('/uploadLogoWatermark', upload.array('images'), (req, res) => {
 
 router.post('/generateCommand', (req, res) => {
   let {commandArray} = req.body;
-
- for(let i=0; i<commandArray.length; i++){
-    exec(commandArray[i], (error, stdout, stderr) => {
+  for(let i=0; i<commandArray.length; i++){
+    exec(commandArray[i],{cwd: 'public'}, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return;
