@@ -3,7 +3,10 @@ const router = express();
 const path = require('path');
 const multer = require('multer');
 const sharp = require('sharp');
+const _ = require("lodash")
+
 const serverUrl = 'http://localhost:5000';
+
 const { exec } = require("child_process");
 
 const storage = multer.diskStorage({
@@ -77,6 +80,68 @@ router.post('/generateCommand', (req, res) => {
       message: 'success'
     });
 });
+
+router.post('/ffmpegCmd', (req, res) => {
+    let imageProps = req.body;
+    let command;  commandArray = [];
+
+  imageProps.map((imageObj) => {
+    command = `ffmpeg -i ${imageObj.imageName} `;
+
+    ///inner loop
+    imageObj.watermarks.map((watermark) => {
+      if (watermark.watermarkType === "logo") {
+        command += `-i ${watermark.logoFileName} `
+      }
+    })
+    //end inner loop
+    command += `-filter_complex`
+
+    let sortedWatermarks = _.orderBy(imageObj.watermarks, ['watermarkType'], ['asc']);
+
+     sortedWatermarks.map((watermark, index) => {
+            console.log("index", index);
+            console.log("watermark[index]", watermark[index]);  
+            switch (watermark.watermarkType) {
+          
+            case 'logo': {
+             // command+= `[${index+1}:v]scale=${watermark[index+1].width}:${watermark[index+1].height}[i${[index+1]}];` ;
+               //command += `[1]scale=${watermark.width}:${watermark.height}[t],[0][t]overlay=${watermark.x}:${watermark.y}[i1];`
+                  break;
+                }
+            }
+        
+     })
+
+     for(let k =0 ; k< sortedWatermarks.length ; k++){
+         console.log("sortedWatermarks[k]", sortedWatermarks[k]["watermarkType"]);
+
+         switch (sortedWatermarks[k]["watermarkType"]) {
+          
+            case 'logo': {
+                
+              command+= `[${k+1}:v]scale=${sortedWatermarks[k]["width"]}:${sortedWatermarks[k]["height"]}[i${[k+1]}];` ;
+
+
+              //    [${k}:v][i${[k+1]}]overlay=44.0:104.0[o${[k+1]}]
+             // command+= `,`
+               //command += `[1]scale=${watermark.width}:${watermark.height}[t],[0][t]overlay=${watermark.x}:${watermark.y}[i1];`
+                  break;
+                }
+            }
+     }
+
+    command += ` output-${imageObj.imageName} -y`
+    commandArray.push(command);
+    })
+
+    console.log("command", commandArray[0])
+
+    return res.status(200).json({
+        message: 'success'
+      });
+
+  });
 
 
 
