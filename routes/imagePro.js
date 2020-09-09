@@ -113,14 +113,11 @@ router.post('/ffmpegCmd', (req, res) => {
                   command+= `[${k}:v][i${[k+1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k+1]}];`
               }
 
-              else{
-               // command+= `[o${k}][i${[k+1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k+1]}];`
-                command+= `[o${k}][i${[k+1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
-              }
-               
-             
+                  else{
+                      command+= `[o${k}][i${[k+1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k+1]}];`
+                   // command+= `[o${k}][i${[k+1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
+                  }
               //    [${k}:v][i${[k+1]}]overlay=44.0:104.0[o${[k+1]}]
-            
                   break;
                 }
             }
