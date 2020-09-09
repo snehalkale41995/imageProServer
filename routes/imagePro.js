@@ -97,9 +97,12 @@ router.post('/ffmpegCmd', (req, res) => {
         //end inner loop
         command += ` -filter_complex `
         let sortedWatermarks = _.orderBy(imageObj.watermarks, ['watermarkType'], ['asc']);
-        var logoCount = _.countBy(sortedWatermarks, function (rec) {
+        var count = _.countBy(sortedWatermarks, function (rec) {
             return rec.watermarkType == "logo";
         });
+
+        let logoCount = count.true;
+        let textCount = count.false;
 
         console.log("logoCount", logoCount);
         for (let k = 0; k < sortedWatermarks.length; k++) {
@@ -111,20 +114,34 @@ router.post('/ffmpegCmd', (req, res) => {
                         command += `[${k}:v][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k + 1]}];`
                     }
                     else {
-                        if (k === logoCount.true-1 && logoCount.false === 0) {
-                           console.log("logoCount.false", logoCount.false)
+                        if (k === logoCount - 1 && textCount === 0) {
+                            console.log("logoCount.false", logoCount)
                             command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
                         }
-                        else{
+                        else {
                             command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k + 1]}];`
-                            
                         }
                     }
                     break;
                 }
-                case "text" : {
-                    if(logoCount.false !== 0)
-                    command += `[o${logoCount.true}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
+                case "text": {
+                    console.log("textCount", textCount);
+                    console.log("sortedWatermarks.length", sortedWatermarks.length);
+                    if(textCount !== 0){
+                        if (k === logoCount){
+                            console.log("k h",k)
+                         command += `[o${logoCount}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
+                        }
+                      
+                        if(textCount != 1 && k!==sortedWatermarks.length && k!=logoCount){
+                            console.log("k",k)
+                            command += `,`
+                        }
+                         if(k != logoCount){
+                           
+                         command += `drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}` 
+                        }
+                    }
                 }
             }
         }
