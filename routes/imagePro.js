@@ -96,21 +96,14 @@ router.post('/ffmpegCmd', (req, res) => {
         })
         //end inner loop
         command += ` -filter_complex `
-
         let sortedWatermarks = _.orderBy(imageObj.watermarks, ['watermarkType'], ['asc']);
-
         var logoCount = _.countBy(sortedWatermarks, function (rec) {
-
             return rec.watermarkType == "logo";
-
         });
 
-
+        console.log("logoCount", logoCount);
         for (let k = 0; k < sortedWatermarks.length; k++) {
-            console.log("sortedWatermarks[k]", sortedWatermarks[k]["watermarkType"]);
-
             switch (sortedWatermarks[k]["watermarkType"]) {
-
                 case 'logo': {
                     command += `[${k + 1}:v]scale=${sortedWatermarks[k]["width"]}:${sortedWatermarks[k]["height"]}[i${[k + 1]}];`;
 
@@ -118,19 +111,20 @@ router.post('/ffmpegCmd', (req, res) => {
                         command += `[${k}:v][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k + 1]}];`
                     }
                     else {
-                        console.log("k", k)
-                        if (k === logoCount.true-1) {
-                           
+                        if (k === logoCount.true-1 && logoCount.false === 0) {
+                           console.log("logoCount.false", logoCount.false)
                             command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
                         }
                         else{
                             command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k + 1]}];`
+                            
                         }
-                           
-                       
                     }
-                    //    [${k}:v][i${[k+1]}]overlay=44.0:104.0[o${[k+1]}]
                     break;
+                }
+                case "text" : {
+                    if(logoCount.false !== 0)
+                    command += `[o${logoCount.true}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
                 }
             }
         }
