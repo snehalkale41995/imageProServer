@@ -141,10 +141,10 @@ async function generateCommand(commandArray, finalImages, req, res, sendImageUrl
             console.log(`stdout: ${stdout}`);
         });
     }
-    sendImageUrls(req, res);
+    sendImageUrls(finalImages, req, res);
 }
 
-function sendImageUrls(req, res) {
+function sendImageUrls(finalImages, req, res) {
     let responseImages = []
     finalImages.forEach(image => {
         if (fs.existsSync(`./public/${image}`)) {
