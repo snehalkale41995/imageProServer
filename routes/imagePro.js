@@ -119,20 +119,15 @@ router.post('/generateCommnd', async (req, res) => {
                 }
             }
         }
-
-        console.log("finalImages", finalImages)
-
         command += ` output-${imageObj.imageName} -y`
         commandArray.push(command);
     })
-
-    generateCommand(commandArray, finalImages, req, res);
-
+    await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
 });
 
 
-function generateCommand(commandArray, finalImages, req, res) {
-    let responseImages = []
+async function generateCommand(commandArray, finalImages, req, res, sendImageUrls) {
+
     for (let i = 0; i < commandArray.length; i++) {
         exec(commandArray[i], { cwd: 'public' }, (error, stdout, stderr) => {
             if (error) {
@@ -146,7 +141,11 @@ function generateCommand(commandArray, finalImages, req, res) {
             console.log(`stdout: ${stdout}`);
         });
     }
+    sendImageUrls(req, res);
+}
 
+function sendImageUrls(req, res) {
+    let responseImages = []
     finalImages.forEach(image => {
         if (fs.existsSync(`./public/${image}`)) {
             responseImages.push(`${serverUrl}/${image}`)
