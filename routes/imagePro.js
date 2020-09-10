@@ -4,10 +4,11 @@ const path = require('path');
 const multer = require('multer');
 const sharp = require('sharp');
 const _ = require("lodash")
-
+const fs = require('fs')
 const serverUrl = 'http://localhost:5000';
 
 const { exec } = require("child_process");
+const { func } = require('joi');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -29,14 +30,14 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 router.post('/upload', upload.array('images'), (req, res, next) => {
-    console.log("req.files", req.files)
+
     let { firstImageHeight, firstImageWidth, ratio } = req.body;
     try {
         sharp(req.files[0].path).resize({ width: parseInt(firstImageWidth), height: parseInt(firstImageHeight) }).toFile('public/' + 'thumbnails-' + req.files[0].originalname, (err, resizeImage) => {
             if (err) {
                 console.log(err);
             } else {
-                console.log(resizeImage);
+                //   console.log(resizeImage);
             }
         })
 
@@ -61,31 +62,12 @@ router.post('/uploadLogoWatermark', upload.array('images'), (req, res) => {
 });
 
 
-router.post('/generateCommand', (req, res) => {
-    let { commandArray } = req.body;
-    for (let i = 0; i < commandArray.length; i++) {
-        exec(commandArray[i], { cwd: 'public' }, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-        });
-    }
-    return res.status(200).json({
-        message: 'success'
-    });
-});
-
-router.post('/ffmpegCmd', (req, res) => {
+router.post('/generateCommnd', async (req, res) => {
     let imageProps = req.body;
-    let command; commandArray = [];
+    let command; commandArray = [], finalImages = [];
 
     imageProps.map((imageObj) => {
+        finalImages.push(`output-${imageObj.imageName}`)
         command = `ffmpeg -i ${imageObj.imageName} `;
 
         ///inner loop
@@ -104,7 +86,6 @@ router.post('/ffmpegCmd', (req, res) => {
         let logoCount = count.true;
         let textCount = count.false;
 
-        console.log("logoCount", logoCount);
         for (let k = 0; k < sortedWatermarks.length; k++) {
             switch (sortedWatermarks[k]["watermarkType"]) {
                 case 'logo': {
@@ -115,7 +96,6 @@ router.post('/ffmpegCmd', (req, res) => {
                     }
                     else {
                         if (k === logoCount - 1 && textCount === 0) {
-                            console.log("logoCount.false", logoCount)
                             command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
                         }
                         else {
@@ -125,39 +105,58 @@ router.post('/ffmpegCmd', (req, res) => {
                     break;
                 }
                 case "text": {
-                    console.log("textCount", textCount);
-                    console.log("sortedWatermarks.length", sortedWatermarks.length);
-                    if(textCount !== 0){
-                        if (k === logoCount){
-                            console.log("k h",k)
-                         command += `[o${logoCount}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
+                    if (textCount !== 0) {
+                        if (k === logoCount) {
+                            command += `[o${logoCount}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
                         }
-                      
-                        if(textCount != 1 && k!==sortedWatermarks.length && k!=logoCount){
-                            console.log("k",k)
+                        if (textCount != 1 && k !== sortedWatermarks.length && k != logoCount) {
                             command += `,`
                         }
-                         if(k != logoCount){
-                           
-                         command += `drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}` 
+                        if (k != logoCount) {
+                            command += `drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
                         }
                     }
                 }
             }
         }
 
+        console.log("finalImages", finalImages)
+
         command += ` output-${imageObj.imageName} -y`
         commandArray.push(command);
     })
 
-    console.log("command", commandArray[0])
-
-    return res.status(200).json({
-        message: 'success'
-    });
+    generateCommand(commandArray, finalImages, req, res);
 
 });
 
 
+function generateCommand(commandArray, finalImages, req, res) {
+    let responseImages = []
+    for (let i = 0; i < commandArray.length; i++) {
+        exec(commandArray[i], { cwd: 'public' }, (error, stdout, stderr) => {
+            if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+        });
+    }
+
+    finalImages.forEach(image => {
+        if (fs.existsSync(`./public/${image}`)) {
+            responseImages.push(`${serverUrl}/${image}`)
+        }
+    });
+
+    return res.status(200).json({
+        data: responseImages,
+        message: 'success'
+    });
+}
 
 module.exports = router;
