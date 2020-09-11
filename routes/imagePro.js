@@ -77,7 +77,7 @@ router.post('/generateCommnd', async (req, res) => {
             }
         })
         //end inner loop
-        command += ` -filter_complex `
+        command += ` -filter_complex "`
         let sortedWatermarks = _.orderBy(imageObj.watermarks, ['watermarkType'], ['asc']);
         var count = _.countBy(sortedWatermarks, function (rec) {
             return rec.watermarkType == "logo";
@@ -97,6 +97,7 @@ router.post('/generateCommnd', async (req, res) => {
                         command+= `[i${k + 1}] rotate=-90*PI/180:c=black@0:ow=rotw(iw):oh=roth(ih)[ir${k + 1}];`
                         ip = 'ir';
                     }
+                   
                     else ip = 'i';
                     
                     if (k == 0) {
@@ -128,11 +129,11 @@ router.post('/generateCommnd', async (req, res) => {
                 }
             }
         }
-        command += ` output-${imageObj.imageName} -y`
+        command += `" output-${imageObj.imageName} -y`
         console.log("command", command)
         commandArray.push(command);
     })
-   // await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
+    await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
 });
 
 
