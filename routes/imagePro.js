@@ -88,26 +88,35 @@ router.post('/generateCommnd', async (req, res) => {
 
         for (let k = 0; k < sortedWatermarks.length; k++) {
             switch (sortedWatermarks[k]["watermarkType"]) {
+              
                 case 'logo': {
-                    command += `[${k + 1}:v]scale=${sortedWatermarks[k]["width"]}:${sortedWatermarks[k]["height"]}[i${[k + 1]}];`;
-
+                    let ip = 'i' ;
+                    command += `[${k + 1}:v]scale=${sortedWatermarks[k]["width"]}:${sortedWatermarks[k]["height"]}[${ip}${[k + 1]}];`;
+                  
+                    if(sortedWatermarks[k]["rotation"]){
+                        command+= `[i${k + 1}] rotate=-90*PI/180:c=black@0:ow=rotw(iw):oh=roth(ih)[ir${k + 1}];`
+                        ip = 'ir';
+                    }
+                    else ip = 'i';
+                    
                     if (k == 0) {
-                        command += `[${k}:v][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k + 1]}];`
+                        command += `[${k}:v][${ip}${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[opt${[k + 1]}];`
                     }
                     else {
                         if (k === logoCount - 1 && textCount === 0) {
-                            command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
+                            command += `[opt${k}][${ip}${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
                         }
                         else {
-                            command += `[o${k}][i${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[o${[k + 1]}];`
+                            command += `[opt${k}][${ip}${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[opt${[k + 1]}];`
                         }
                     }
                     break;
                 }
+
                 case "text": {
                     if (textCount !== 0) {
                         if (k === logoCount) {
-                            command += `[o${logoCount}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
+                            command += `[opt${logoCount}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
                         }
                         if (textCount != 1 && k !== sortedWatermarks.length && k != logoCount) {
                             command += `,`
@@ -120,9 +129,10 @@ router.post('/generateCommnd', async (req, res) => {
             }
         }
         command += ` output-${imageObj.imageName} -y`
+        console.log("command", command)
         commandArray.push(command);
     })
-    await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
+   // await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
 });
 
 
