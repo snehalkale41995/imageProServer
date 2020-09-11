@@ -84,7 +84,7 @@ router.post('/generateCommnd', async (req, res) => {
         });
 
         let logoCount = count.true;
-        let textCount = count.false;
+        let textCount = count.false? count.false : 0;
 
         for (let k = 0; k < sortedWatermarks.length; k++) {
             switch (sortedWatermarks[k]["watermarkType"]) {
@@ -94,10 +94,15 @@ router.post('/generateCommnd', async (req, res) => {
                     command += `[${k + 1}:v]scale=${sortedWatermarks[k]["width"]}:${sortedWatermarks[k]["height"]}[${ip}${[k + 1]}];`;
                   
                     if(sortedWatermarks[k]["rotation"]){
-                        command+= `[i${k + 1}] rotate=-90*PI/180:c=black@0:ow=rotw(iw):oh=roth(ih)[ir${k + 1}];`
+                        command+= `[i${k + 1}] rotate=${sortedWatermarks[k]["rotation"]}*PI/180:c=none:ow=rotw(iw):oh=roth(ih)[ir${k + 1}];`
                         ip = 'ir';
                     }
-                   
+                    else ip = 'i'
+                    
+                     if(sortedWatermarks[k]["rotation"] && sortedWatermarks[k]["opacity"]){
+                        command+= `[ir${k + 1}]colorchannelmixer=aa=0.7[irp${k + 1}];`;
+                        ip = 'irp';
+                    }
                     else ip = 'i';
                     
                     if (k == 0) {
@@ -133,7 +138,7 @@ router.post('/generateCommnd', async (req, res) => {
         console.log("command", command)
         commandArray.push(command);
     })
-    await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
+  //  await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
 });
 
 
