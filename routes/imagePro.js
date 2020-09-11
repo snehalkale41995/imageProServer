@@ -100,7 +100,7 @@ router.post('/generateCommnd', async (req, res) => {
                     else ip = 'i'
                     
                      if(sortedWatermarks[k]["rotation"] && sortedWatermarks[k]["opacity"]){
-                        command+= `[ir${k + 1}]colorchannelmixer=aa=0.7[irp${k + 1}];`;
+                        command+= `[ir${k + 1}]colorchannelmixer=aa=${sortedWatermarks[k]["opacity"]/10}[irp${k + 1}];`;
                         ip = 'irp';
                     }
                     else ip = 'i';
