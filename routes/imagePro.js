@@ -138,7 +138,7 @@ router.post('/generateCommnd', async (req, res) => {
         console.log("command", command)
         commandArray.push(command);
     })
-  //  await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
+    await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
 });
 
 
