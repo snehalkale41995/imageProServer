@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
         cb(null, 'public');
     },
     filename: (req, file, cb) => {
-        console.log(file);
+      //  console.log(file);
         cb(null, file.originalname);
         // + path.extname(file.originalname)
     }
@@ -35,7 +35,7 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
     try {
         sharp(req.files[0].path).resize({ width: parseInt(firstImageWidth), height: parseInt(firstImageHeight) }).toFile('public/' + 'thumbnails-' + req.files[0].originalname, (err, resizeImage) => {
             if (err) {
-                console.log(err);
+              //  console.log(err);
             } else {
                 //   console.log(resizeImage);
             }
@@ -53,7 +53,7 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
             message: 'File uploded successfully'
         });
     } catch (error) {
-        console.error(error);
+       // console.error(error);
     }
 });
 
@@ -62,7 +62,7 @@ router.post('/uploadLogoWatermark', upload.array('images'), (req, res) => {
 });
 
 
-router.post('/generateCommnd', async (req, res) => {
+router.post('/generateCommand', async (req, res) => {
     let imageProps = req.body;
     let command; commandArray = [], finalImages = [];
 
@@ -135,7 +135,6 @@ router.post('/generateCommnd', async (req, res) => {
             }
         }
         command += `" output-${imageObj.imageName} -y`
-        console.log("command", command)
         commandArray.push(command);
     })
     await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
@@ -143,35 +142,46 @@ router.post('/generateCommnd', async (req, res) => {
 
 
 async function generateCommand(commandArray, finalImages, req, res, sendImageUrls) {
-
     for (let i = 0; i < commandArray.length; i++) {
         exec(commandArray[i], { cwd: 'public' }, (error, stdout, stderr) => {
             if (error) {
-                console.log(`error: ${error.message}`);
+              //  console.log(`error: ${error.message}`);
                 return;
             }
             if (stderr) {
-                console.log(`stderr: ${stderr}`);
+              //  console.log(`stderr: ${stderr}`);
                 return;
             }
-            console.log(`stdout: ${stdout}`);
+           // console.log(`stdout: ${stdout}`);
         });
     }
-    sendImageUrls(finalImages, req, res);
+   
+     await sendImageUrls(finalImages, req, res);
+  
+    
 }
 
-function sendImageUrls(finalImages, req, res) {
+  function sendImageUrls(finalImages, req, res) {
     let responseImages = []
     finalImages.forEach(image => {
-        if (fs.existsSync(`./public/${image}`)) {
+       // if (fs.existsSync(`./public/${image}`)) {
             responseImages.push(`${serverUrl}/${image}`)
-        }
+       // }
     });
 
-    return res.status(200).json({
-        data: responseImages,
-        message: 'success'
-    });
+    if(responseImages.length){
+        return res.status(200).json({
+            data: responseImages,
+            message: 'success'
+        });
+    }
+    else{
+        return res.status(404).json({
+            data: [],
+            message: 'failiure'
+        });
+    }
+   
 }
 
 module.exports = router;
