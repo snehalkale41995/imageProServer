@@ -57,9 +57,11 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
     }
 });
 
-router.post('/uploadLogoWatermark', upload.array('images'), (req, res) => {
-
-});
+router.post('/uploadLogo', upload.array('images'), (req, res, next) => {
+     res.status(200).json({
+        message: 'success'
+    });
+})
 
 
 router.post('/generateCommand', async (req, res) => {
