@@ -21,11 +21,12 @@ const storage = multer.diskStorage({
     }
 });
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png') {
-        cb(null, true);
-    } else {
-        cb(null, false);
-    }
+    // if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png') {
+    //     cb(null, true);
+    // } else {
+    //     cb(null, false);
+    // }
+    cb(null, true);
 }
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
@@ -49,6 +50,36 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
                     firstImageWidth: firstImageWidth,
                     ratio: ratio
                 }
+            },
+            message: 'File uploded successfully'
+        });
+    } catch (error) {
+       // console.error(error);
+    }
+});
+
+router.post('/createVideoThumbnail',  upload.array('images'), (req, res, next) => {
+    console.log(req.files[0])
+    let { firstImageHeight, firstImageWidth } = req.body;
+    var fields = req.files[0].originalname.split('.');
+    var outputFileName = `thumbnails-${fields[0]}.png`;
+    try {
+        let command = `ffmpeg -i ${req.files[0].originalname} -ss 00 -vframes 1 -s ${firstImageWidth}x${firstImageHeight} ${outputFileName} -y`
+        exec(command, { cwd: 'public' }, (error, stdout, stderr) => {
+            if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+        });
+
+        return res.status(201).json({
+            data: {
+                thumbnailPath: `${serverUrl}/${outputFileName}`,
             },
             message: 'File uploded successfully'
         });
