@@ -175,11 +175,16 @@ router.post('/generateCommand', async (req, res) => {
         command += `" output-${imageObj.imageName} -y`
         commandArray.push(command);
     })
-    await generateCommand(commandArray, finalImages, req, res, sendImageUrls);
+    await generateCommand(commandArray, finalImages).then(()=>{
+        setTimeout(() => {
+            sendImageUrls(finalImages, req, res);
+        }, 5000);
+       
+    });
 });
 
 
-async function generateCommand(commandArray, finalImages, req, res, sendImageUrls) {
+async function generateCommand(commandArray, finalImages) {
   console.log("generateCommand")
     for (let i = 0; i < commandArray.length; i++) {
         exec(commandArray[i], { cwd: 'public' }, (error, stdout, stderr) => {
@@ -194,19 +199,13 @@ async function generateCommand(commandArray, finalImages, req, res, sendImageUrl
            // console.log(`stdout: ${stdout}`);
         });
     }
-   
-     await sendImageUrls(finalImages, req, res);
-  
-    
 }
 
   function sendImageUrls(finalImages, req, res) {
     let responseImages = []
     finalImages.forEach(image => {
-            responseImages.push(`${serverUrl}/${image}`)
+         responseImages.push(`${serverUrl}/${image}`)
     });
-
-
 
     if(responseImages.length){
         return res.status(200).json({
