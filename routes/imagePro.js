@@ -172,9 +172,7 @@ async function generateCommand(commandArray, finalImages, req, res, sendImageUrl
   function sendImageUrls(finalImages, req, res) {
     let responseImages = []
     finalImages.forEach(image => {
-        if (fs.existsSync(`./public/${image}`)) {
             responseImages.push(`${serverUrl}/${image}`)
-        }
     });
 
     if(responseImages.length){
