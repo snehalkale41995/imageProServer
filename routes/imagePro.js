@@ -179,7 +179,7 @@ router.post('/generateCommand', async (req, res) => {
     await generateCommand(commandArray, finalImages).then(()=>{
         setTimeout(() => {
             sendImageUrls(finalImages, req, res);
-        }, 5000);
+        }, 1000);
        
     });
 });
