@@ -70,10 +70,11 @@ router.post('/createVideoThumbnail', upload.array('videos'), async (req, res, ne
             return res.status(201).json({
                 data: {
                     thumbnailPath: `${serverUrl}/${outputFileName}`,
-                    width: ratioData.imageWidth,
-                    height: ratioData.imageHeight,
+                    ratio: {
+                    firstImageWidth: ratioData.imageWidth,
+                    firstImageHeight: ratioData.imageHeight,
                     ratio: ratioData.ratio
-    
+                    }
                 },
                 message: 'File uploded successfully'
             });
