@@ -15,7 +15,6 @@ const storage = multer.diskStorage({
         cb(null, 'public');
     },
     filename: (req, file, cb) => {
-      //  console.log(file);
         cb(null, file.originalname);
         // + path.extname(file.originalname)
     }
@@ -36,7 +35,7 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
     try {
         sharp(req.files[0].path).resize({ width: parseInt(firstImageWidth), height: parseInt(firstImageHeight) }).toFile('public/' + 'thumbnails-' + req.files[0].originalname, (err, resizeImage) => {
             if (err) {
-              //  console.log(err);
+                //  console.log(err);
             } else {
                 //   console.log(resizeImage);
             }
@@ -54,42 +53,39 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
             message: 'File uploded successfully'
         });
     } catch (error) {
-       // console.error(error);
+        // console.error(error);
     }
 });
 
-router.post('/createVideoThumbnail',  upload.array('images'), (req, res, next) => {
-    console.log(req.files[0])
-    let { firstImageHeight, firstImageWidth } = req.body;
+router.post('/createVideoThumbnail', upload.array('videos'), async (req, res, next) => {
     var fields = req.files[0].originalname.split('.');
     var outputFileName = `thumbnails-${fields[0]}.png`;
     try {
-        let command = `ffmpeg -i ${req.files[0].originalname} -ss 00 -vframes 1 -s ${firstImageWidth}x${firstImageHeight} ${outputFileName} -y`
-        exec(command, { cwd: 'public' }, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
+        let cmd = `ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x ${req.files[0].originalname}`
+        exec(cmd, { cwd: 'public' }, async (error, stdout, stderr) => {
+            var dimensions = stdout.split('x');
+            let ratioData = await getImageRatio(parseInt(dimensions[0]), parseInt(dimensions[1]));
+            let command = `ffmpeg -i ${req.files[0].originalname} -ss 00 -vframes 1 -s ${ratioData.imageWidth}x${ratioData.imageHeight} ${outputFileName} -y`
+            executeCommand(command);
         });
 
         return res.status(201).json({
             data: {
                 thumbnailPath: `${serverUrl}/${outputFileName}`,
+                width: ratioData.imageWidth,
+                height: ratioData.imageHeight,
+                ratio: ratioData.ratio
+
             },
             message: 'File uploded successfully'
         });
     } catch (error) {
-       // console.error(error);
+        // console.error(error);
     }
 });
 
 router.post('/uploadLogo', upload.array('images'), (req, res, next) => {
-     res.status(200).json({
+    res.status(200).json({
         message: 'success'
     });
 })
@@ -117,32 +113,32 @@ router.post('/generateCommand', async (req, res) => {
         });
 
         let logoCount = count.true;
-        let textCount = count.false? count.false : 0;
+        let textCount = count.false ? count.false : 0;
 
         for (let k = 0; k < sortedWatermarks.length; k++) {
             switch (sortedWatermarks[k]["watermarkType"]) {
-              
+
                 case 'logo': {
-                    let ip = 'i' ;
+                    let ip = 'i';
                     command += `[${k + 1}:v]scale=${sortedWatermarks[k]["width"]}:${sortedWatermarks[k]["height"]}[${ip}${[k + 1]}];`;
-                  
-                    if(sortedWatermarks[k]["rotation"]){
-                        command+= `[i${k + 1}] rotate=${sortedWatermarks[k]["rotation"]}*PI/180:c=none:ow=rotw(iw):oh=roth(ih)[ir${k + 1}];`
+
+                    if (sortedWatermarks[k]["rotation"]) {
+                        command += `[i${k + 1}] rotate=${sortedWatermarks[k]["rotation"]}*PI/180:c=none:ow=rotw(iw):oh=roth(ih)[ir${k + 1}];`
                         ip = 'ir';
                     }
                     else ip = 'i'
-                    
-                     if(sortedWatermarks[k]["rotation"] && sortedWatermarks[k]["opacity"]){
-                        command+= `[ir${k + 1}]colorchannelmixer=aa=${sortedWatermarks[k]["opacity"]/10}[irp${k + 1}];`;
+
+                    if (sortedWatermarks[k]["rotation"] && sortedWatermarks[k]["opacity"]) {
+                        command += `[ir${k + 1}]colorchannelmixer=aa=${sortedWatermarks[k]["opacity"] / 10}[irp${k + 1}];`;
                         ip = 'irp';
                     }
                     else ip = 'i';
-                    
+
                     if (k == 0) {
-                        if(logoCount ===1 && textCount===0){
+                        if (logoCount === 1 && textCount === 0) {
                             command += `[${k}:v][${ip}${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}`
                         }
-                        else{
+                        else {
                             command += `[${k}:v][${ip}${[k + 1]}]overlay=${sortedWatermarks[k]["x"]}:${sortedWatermarks[k]["y"]}[opt${[k + 1]}];`
                         }
                     }
@@ -175,51 +171,89 @@ router.post('/generateCommand', async (req, res) => {
         command += `" output-${imageObj.imageName} -y`
         commandArray.push(command);
     })
-    await generateCommand(commandArray, finalImages).then(()=>{
+    await generateCommand(commandArray, finalImages).then(() => {
         setTimeout(() => {
             sendImageUrls(finalImages, req, res);
         }, 5000);
-       
+
     });
 });
 
 
 async function generateCommand(commandArray, finalImages) {
-  console.log("generateCommand")
     for (let i = 0; i < commandArray.length; i++) {
-        exec(commandArray[i], { cwd: 'public' }, (error, stdout, stderr) => {
-            if (error) {
-              //  console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-              //  console.log(`stderr: ${stderr}`);
-                return;
-            }
-           // console.log(`stdout: ${stdout}`);
-        });
+        executeCommand(commandArray[i]);
     }
 }
 
-  function sendImageUrls(finalImages, req, res) {
+function sendImageUrls(finalImages, req, res) {
     let responseImages = []
     finalImages.forEach(image => {
-         responseImages.push(`${serverUrl}/${image}`)
+        responseImages.push(`${serverUrl}/${image}`)
     });
 
-    if(responseImages.length){
+    if (responseImages.length) {
         return res.status(200).json({
             data: responseImages,
             message: 'success'
         });
     }
-    else{
+    else {
         return res.status(404).json({
             data: [],
             message: 'failiure'
         });
     }
-   
+
+
 }
+
+function getImageRatio(inputWidth, inputHeight) {
+    let imageAspectRatio = inputWidth / inputHeight;
+    let goWith = inputWidth >= inputHeight ? "width" : "height";
+
+
+    if (goWith === "height") {
+        // preview image height will be fix as 500 , we have to find the width with asp ratio
+        const previewHeight = 500;
+        let newWidth = (previewHeight * imageAspectRatio);
+        let previewData = {
+            ratio: imageAspectRatio,
+            imageWidth: parseInt(newWidth),
+            imageHeight: parseInt(previewHeight)
+        };
+        return previewData
+    } else {
+        // preview widht will be fix as 500, fine new height as per asp ratio
+        const previewWidth = 500;
+        let newHeight = (previewWidth / imageAspectRatio);
+
+        let previewData = {
+            ratio: imageAspectRatio,
+            imageWidth: parseInt(previewWidth),
+            imageHeight: parseInt(newHeight),
+        };
+
+        return previewData;
+
+    }
+
+}
+
+function executeCommand(command) {
+    exec(command, { cwd: 'public' }, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+    });
+
+}
+
 
 module.exports = router;
