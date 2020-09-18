@@ -67,18 +67,19 @@ router.post('/createVideoThumbnail', upload.array('videos'), async (req, res, ne
             let ratioData = await getImageRatio(parseInt(dimensions[0]), parseInt(dimensions[1]));
             let command = `ffmpeg -i ${req.files[0].originalname} -ss 00 -vframes 1 -s ${ratioData.imageWidth}x${ratioData.imageHeight} ${outputFileName} -y`
             executeCommand(command);
+            return res.status(201).json({
+                data: {
+                    thumbnailPath: `${serverUrl}/${outputFileName}`,
+                    width: ratioData.imageWidth,
+                    height: ratioData.imageHeight,
+                    ratio: ratioData.ratio
+    
+                },
+                message: 'File uploded successfully'
+            });
         });
 
-        return res.status(201).json({
-            data: {
-                thumbnailPath: `${serverUrl}/${outputFileName}`,
-                width: ratioData.imageWidth,
-                height: ratioData.imageHeight,
-                ratio: ratioData.ratio
-
-            },
-            message: 'File uploded successfully'
-        });
+       
     } catch (error) {
         // console.error(error);
     }
