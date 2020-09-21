@@ -5,7 +5,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const _ = require("lodash")
 const fs = require('fs')
-const serverUrl = 'http://localhost:5000';
+const AppConfig = require('../appConfig/config');
 
 const { exec } = require("child_process");
 const { func } = require('joi');
@@ -43,7 +43,7 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
 
         return res.status(201).json({
             data: {
-                thumbnailPath: `${serverUrl}/thumbnails-${req.files[0].originalname}`,
+                thumbnailPath: `${AppConfig.serverUrl}/thumbnails-${req.files[0].originalname}`,
                 ratio: {
                     firstImageHeight: firstImageHeight,
                     firstImageWidth: firstImageWidth,
@@ -69,7 +69,7 @@ router.post('/createVideoThumbnail', upload.array('videos'), async (req, res, ne
             executeCommand(command);
             return res.status(201).json({
                 data: {
-                    thumbnailPath: `${serverUrl}/${outputFileName}`,
+                    thumbnailPath: `${AppConfig.serverUrl}/${outputFileName}`,
                     ratio: {
                     firstImageWidth: ratioData.imageWidth,
                     firstImageHeight: ratioData.imageHeight,
@@ -170,8 +170,10 @@ router.post('/generateCommand', async (req, res) => {
                 }
             }
         }
-        command += `" output-${imageObj.imageName} -y`
+        command += `" -preset ultrafast output-${imageObj.imageName} -y`;
         commandArray.push(command);
+        console.log("commandArray", commandArray)
+
     })
     await generateCommand(commandArray, finalImages).then(() => {
         setTimeout(() => {
@@ -191,7 +193,7 @@ async function generateCommand(commandArray, finalImages) {
 function sendImageUrls(finalImages, req, res) {
     let responseImages = []
     finalImages.forEach(image => {
-        responseImages.push(`${serverUrl}/${image}`)
+        responseImages.push(`${AppConfig.serverUrl}/${image}`)
     });
 
     if (responseImages.length) {
