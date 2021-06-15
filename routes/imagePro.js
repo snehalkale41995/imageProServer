@@ -9,6 +9,7 @@ const AppConfig = require('../appConfig/config');
 
 const { exec } = require("child_process");
 const { func } = require('joi');
+const { text } = require('express');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -95,6 +96,7 @@ router.post('/uploadLogo', upload.array('images'), (req, res, next) => {
 
 router.post('/generateCommand', async (req, res) => {
     let imageProps = req.body;
+    console.log("imageProps", JSON.stringify(imageProps))
     let command; commandArray = [], finalImages = [];
 
     imageProps.map((imageObj) => {
@@ -110,12 +112,18 @@ router.post('/generateCommand', async (req, res) => {
         //end inner loop
         command += ` -filter_complex "`
         let sortedWatermarks = _.orderBy(imageObj.watermarks, ['watermarkType'], ['asc']);
+
+        console.log("sortedWatermarks", sortedWatermarks)
         var count = _.countBy(sortedWatermarks, function (rec) {
             return rec.watermarkType == "logo";
         });
 
         let logoCount = count.true;
         let textCount = count.false ? count.false : 0;
+
+        console.log(count)
+        console.log(logoCount)
+        console.log(textCount)
 
         for (let k = 0; k < sortedWatermarks.length; k++) {
             switch (sortedWatermarks[k]["watermarkType"]) {
@@ -160,8 +168,8 @@ router.post('/generateCommand', async (req, res) => {
                         if (k === logoCount) {
                             command += `[opt${logoCount}]drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
                         }
-                        if (textCount != 1 && k !== sortedWatermarks.length && k != logoCount) {
-                            command += `,`
+                        if (k!==0 && textCount != 1 && k !== sortedWatermarks.length && k != logoCount) {
+                            command += `, `
                         }
                         if (k != logoCount) {
                             command += `drawtext=fontfile=timesnewroman.ttf:text='${sortedWatermarks[k]["waterMarkText"]}':fontcolor=${sortedWatermarks[k]["color"]}:fontsize=${sortedWatermarks[k]["size"]}:x=${sortedWatermarks[k]["x"]}:y=${sortedWatermarks[k]["y"]}`
@@ -171,6 +179,7 @@ router.post('/generateCommand', async (req, res) => {
             }
         }
         command += `" -preset ultrafast output-${imageObj.imageName} -y`;
+        console.log("command ", command)
         commandArray.push(command);
         console.log("commandArray", commandArray)
 
