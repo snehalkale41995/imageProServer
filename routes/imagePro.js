@@ -58,6 +58,27 @@ router.post('/upload', upload.array('images'), (req, res, next) => {
     }
 });
 
+router.post('/uploadlogo', upload.array('images'), (req, res, next) => {
+
+    let { firstImageHeight, firstImageWidth, ratio } = req.body;
+    try {
+        sharp(req.files[0].path).resize({ width: parseInt(firstImageWidth), height: parseInt(firstImageHeight) }).toFile('public/' + 'thumbnails-' + req.files[0].originalname, (err, resizeImage) => {
+            if (err) {
+                //  console.log(err);
+            } else {
+                //   console.log(resizeImage);
+            }
+        })
+
+        return res.status(201).json({
+            message: 'Logo uploded successfully'
+        });
+    } catch (error) {
+        // console.error(error);
+    }
+});
+
+
 router.post('/createVideoThumbnail', upload.array('videos'), async (req, res, next) => {
     var fields = req.files[0].originalname.split('.');
     var outputFileName = `thumbnails-${fields[0]}.png`;
